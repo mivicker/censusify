@@ -1,6 +1,6 @@
 # d3censusify
-
 A functional way to manage calls to the Census API.
+
 
 ## Installing from github
 
@@ -58,11 +58,9 @@ georgia = Geography(
   state='13'
 )
 
-city_pct_of_state_pop(detroit, michigan)(acs21)
+city_pct_of_state_pop(atlanta, georgia)(acs21)
 
 ```
-
-
 
 TODO:
 

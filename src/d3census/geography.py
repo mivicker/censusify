@@ -32,7 +32,7 @@ class Geography:
     This is the geography that is passed to a censusified function that
     specifies the geography to filter to from the API.
     """
-    name: str = field(compare=False, default="")
+    name: str = field(compare=False, default='')
     # >
     # aianhh: Optional[str] = None # American Indian/Alaska Native Area/Hawaiian Home Land
     # ->

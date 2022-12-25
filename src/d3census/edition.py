@@ -25,7 +25,7 @@ def build_full_geography(dictionary):
     return result
 
 
-def build_full_geos_from(response: list[list]) -> list[FullGeography]:
+def build_full_geos_from(response: list[list]) -> dict[Geography, FullGeography]:
     labels, *data = response
 
     return {
@@ -45,7 +45,7 @@ class Edition:
 
     def bind(
         self, geographies: list[Geography], closure_vars: list[str]
-    ) -> list[FullGeography]:
+    ) -> dict[Geography, FullGeography]:
 
         call_tree = build_call_tree(geographies)
         geo_filters = call_tree.resolve()
@@ -66,4 +66,3 @@ class Edition:
             for key, val in build_full_geos_from(response).items()
         }
 
-acs_groups = json.loads(requests.get("https://api.census.gov/data/2020/acs/acs5/groups.json").content)
