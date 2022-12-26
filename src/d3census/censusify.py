@@ -1,4 +1,5 @@
 from typing import Any, Callable, no_type_check
+from keyword import iskeyword
 from inspect import getclosurevars, iscode
 from dataclasses import dataclass
 
@@ -50,10 +51,11 @@ def find_subobjects(function):
         subobject = to_check.pop()
         if iscode(subobject):
             for unbound in subobject.co_names:
-                if unbound in ['bind', 'sum']:
+                if iskeyword(unbound) or (unbound in ['bind']) :
                     continue
                 result.add(unbound)
             to_check.extend(subobject.co_consts)
+
     return result
 
 

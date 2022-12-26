@@ -60,12 +60,26 @@ georgia = Geography(
 
 city_pct_of_state_pop(atlanta, georgia)(acs21)
 
+# You can also use comprehensions and stars to use flexible
+# numbers of arguments.
+
+@censusify
+def sum_several_geos(*geos: Tuple[Geography]) -> float:
+    return sum([geo.B01001_001E for geo in geos])
+
+
+@censusify
+def some_percentage(*geos: Tuple[Geography]) -> float:
+    
+    sub_calcs = [(geo.B01001_026E + geo.B01001_034E) for geo in geos]
+
+    return [(sub_calc / geo.B01001_001E) for sub_calc, geo in zip(sub_calcs, geos)]
 ```
+
+
 
 TODO:
 
 - Add a describe function to verify all variable names and geography names.
-- Add async to the API calls
 - Fuss with the interface so you can get more help defining functions earlier
-- Add ability to group and nest functions
 - Bring along MOE to have it handled reasonably
