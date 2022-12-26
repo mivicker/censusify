@@ -64,8 +64,9 @@ class Geography:
     @property
     def geoid(self):
         """
-        This is actually kind of a hard function to write.
+        This is kind of a hard function to write.
         """
+        pass
 
 
     def __post_init__(self):
@@ -99,7 +100,7 @@ class CallTree:
     places: defaultdict[list] = field(default_factory=lambda: defaultdict(list))   
     subdivisions: defaultdict[list] = field(default_factory=lambda: defaultdict(list))
     tracts: defaultdict[list] = field(default_factory=lambda: defaultdict(list))
-    blocks_groups: defaultdict[list] = field(default_factory=lambda: defaultdict(list))
+    block_groups: defaultdict[list] = field(default_factory=lambda: defaultdict(list))
     blocks: defaultdict[list] = field(default_factory=lambda: defaultdict(list))
 
     def resolve_states(self) -> list[str]:
@@ -119,29 +120,43 @@ class CallTree:
 
     def resolve_subdivisions(self) -> list[str]:
         return [
-            f"&in=state:{state}%20county:{county}&for=county%20subdivision:{subdivision}"
+            f"&for=county%20subdivision:{subdivision}&in=state:{state}%20county:{county}"
             for (state, county), subdivision in self.subdivisions.items()
         ]
 
     def resolve_tracts(self) -> list[str]:
-        return [
-            f"&in=state:{state}%20county:{county}&for=tract:{tract}"
-            for (state, county), tract in self.tracts.items()
-        ]
+        result = []
+        for (state, county), tracts in self.tracts.items():
+            tract_str = ",".join(tract for tract in tracts)
+            result.append(
+                f"&for=tract:{tract_str}&in=state:{state}%20county:{county}"
+            )
 
-    def resolve_blocks_groups(self) -> list[str]:
-        return [
-            f"&in=state:{state}%20county:{county}%20tract:{tract}&for=block%20group:{block_group}"
-            for (state, county, tract), block_group in self.blocks_groups.items()
-        ]
+        return result
+
+    def resolve_block_groups(self) -> list[str]:
+        result = []
+        for (state, county, tract), bgroups in self.block_groups.items():
+            bg_string = ",".join(bgroups)
+
+            result.append(
+                f"&for=block%20group:{bg_string}&in=tract:{tract}%20state:{state}%20county:{county}"
+            )
+
+        return result
+
 
     def resolve_blocks(self) -> list[str]:
         raise ValueError("Block geographies are not supported on ACS.")
 
-    def resolve(self) -> dict[str, str]:
+
+    def resolve(self) -> list[str]:
         return [
             *self.resolve_places(),
-            *self.resolve_states()
+            *self.resolve_states(),
+            *self.resolve_counties(),
+            *self.resolve_tracts(),
+            *self.resolve_block_groups(),
         ]
 
 
@@ -197,9 +212,10 @@ def build_call_tree(geographies: list[Geography]) -> CallTree:
                 place=None,
                 subdivision=None,
                 tract=tract,
+                block_group=None,
                 block=None,
             ):
-                call_tree.tracts[(state,county)].append(tract)
+                call_tree.tracts[(state, county)].append(tract)
 
             case Geography(
                 state=state,
@@ -207,8 +223,9 @@ def build_call_tree(geographies: list[Geography]) -> CallTree:
                 subdivision=None,
                 tract=tract,
                 block_group=block_group,
+                block=None,
             ):
-                call_tree.blocks_groups[(state, county, tract)].append(block_group)
+                call_tree.block_groups[(state, county, tract)].append(block_group)
 
             case Geography(
                 state=state,

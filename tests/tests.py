@@ -1,5 +1,8 @@
 # type: ignore
+from pprint import pprint
+
 from d3census import censusify, Geography, Edition
+from d3census.censusify import find_subobjects
 from d3census.geography import build_call_tree
     # This makes sense for one geography
 
@@ -52,14 +55,54 @@ def test_multi_geo_single_parent():
 
 
 def test_multi_geo_multi_parent_single_level():
-    pass
+    detroit = Geography(state='26', place='22000')
+    cincinnati = Geography(state='39', place='15000')
+    atlanta = Geography(state='13', place='04000')
+
+    acs2019 = Edition("acs5", "acs5", "2019")
+
+    @censusify
+    def list_of_pops(geo_one, geo_two, geo_three) -> list[float]:
+        # This fails
+        return [
+            geo_one.B01001_001E,
+            geo_two.B01001_001E,
+            geo_three.B01001_001E,
+        ]
+
+    assert len(list_of_pops(
+        detroit,
+        cincinnati,
+        atlanta
+    )(acs2019)) == 3
 
 
-def test_multi_geo_multi_parent_multi_level():
-    pass
+def test_multi_geo_star_func():
+    detroit = Geography(state='26', place='22000')
+    grand_rapids = Geography(state='26', place='34000')
+    cinncinnati = Geography(state='39', place='15000')
+    dayton = Geography(state='39', place='21000')
+    atlanta = Geography(state='13', place='04000')
 
+    acs2019 = Edition("acs5", "acs5", "2019")
 
-"""unit tests"""
+    @censusify
+    def list_of_pops(*geos) -> list[float]:
+        # This fails because of the comprehension
+        return [
+            (
+                sum([geo.B01001_004E, geo.B01001_005E]) 
+                / geo.B01001_001E
+            ) for geo in geos
+        ]
+
+    assert len(list_of_pops(
+        detroit,
+        grand_rapids,
+        cinncinnati,
+        dayton,
+        atlanta,
+    )(acs2019)) == 5
 
 
 def test_calltree_same_parent():
@@ -75,6 +118,36 @@ def test_calltree_same_parent():
 
     assert len(call_tree.resolve()) == 3
 
+
+def test_multi_geo_multi_parent_multi_level():
+    wayne = Geography(state='26', county='163')
+    tract = Geography(state='26', county='163', tract='511400')
+    bg_5 = Geography(state='26', county='163', tract='511400', block_group='5')
+    livingston = Geography(state='26', county='093')
+    grand_rapids = Geography(state='26', place='34000')
+    cincinnati = Geography(state='39', place='15000')
+    dayton = Geography(state='39', place='21000')
+    atlanta = Geography(state='13', place='04000')
+
+    acs2019 = Edition("acs5", "acs5", "2019")
+
+
+    @censusify
+    def sum_weird_things(*geos):
+        return sum(geo.B01001_028E for geo in geos)
+    
+    print(Geography.__match_args__)
+
+    print(sum_weird_things(
+        wayne,
+        tract,
+        bg_5,
+        livingston,
+        grand_rapids,
+        cincinnati,
+        dayton,
+        atlanta
+    )(acs2019))
 
 # Geography 
 
@@ -97,7 +170,10 @@ def test_calltree_same_parent():
 
 
 if __name__ == "__main__":
-    test_single_geo_single_val()
-    test_single_geo_multiple_vals()
-    test_calltree_same_parent()
-    test_multi_geo_single_parent()
+    # test_single_geo_single_val()
+    # test_single_geo_multiple_vals()
+    # test_calltree_same_parent()
+    # test_multi_geo_single_parent()
+    # test_multi_geo_multi_parent_single_level()
+    # test_multi_geo_star_func()
+    test_multi_geo_multi_parent_multi_level()

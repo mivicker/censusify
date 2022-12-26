@@ -1,39 +1,9 @@
 from dataclasses import dataclass
 
-import json
-import requests
+from typing import AbstractSet
 
-from .geography import Geography, FullGeography, build_call_tree
-
-
-def filter_to_geo_attrs(dictionary):
-    return {
-        key.lower(): value
-        for key, value in dictionary.items()
-        if key.lower() in set(Geography.__match_args__)
-    }
-
-
-def build_full_geography(dictionary):
-    result = FullGeography()
-
-    for key, value in dictionary.items():
-        result.__setattr__(
-            key, float(value)
-        )  # The casting should probably be done elsewhere
-
-    return result
-
-
-def build_full_geos_from(response: list[list]) -> dict[Geography, FullGeography]:
-    labels, *data = response
-
-    return {
-        Geography(**filter_to_geo_attrs(dict(zip(labels, column)))): build_full_geography(
-            dict(zip(labels, column))
-        )
-        for column in data
-    }
+from .geography import Geography, FullGeography
+from .lookuper import look_up
 
 
 @dataclass
@@ -44,25 +14,11 @@ class Edition:
     base_url: str = "https://api.census.gov/data/{year}/acs/{product}?"
 
     def bind(
-        self, geographies: list[Geography], closure_vars: list[str]
+        self, geographies: list[Geography], closure_vars: AbstractSet[str]
     ) -> dict[Geography, FullGeography]:
-
-        call_tree = build_call_tree(geographies)
-        geo_filters = call_tree.resolve()
-        get_str = ",".join(closure_vars)
         filled_base_url = self.base_url.format(
             year=str(self.year), product=self.product
         )
 
-        responses = [
-            json.loads(
-                requests.get(f"{filled_base_url}get={get_str}{geo_filter}").content
-            )
-            for geo_filter in geo_filters
-        ]
-        
-        return {
-            key: val for response in responses 
-            for key, val in build_full_geos_from(response).items()
-        }
+        return look_up(geographies, closure_vars, filled_base_url)
 
