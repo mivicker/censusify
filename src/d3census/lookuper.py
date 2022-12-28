@@ -29,8 +29,6 @@ def build_full_geos_from(
         response: list[list]
     ) -> dict[Geography, FullGeography]:
     
-    print(response)
-
     labels, *data = response
 
     geographies = {
@@ -40,8 +38,6 @@ def build_full_geos_from(
         for column in data
     }
     
-    print(geographies)
-
     return geographies
 
 
