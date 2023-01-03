@@ -1,5 +1,6 @@
 from typing import Any, Callable, no_type_check
 from keyword import iskeyword
+import builtins
 from inspect import getclosurevars, iscode
 from dataclasses import dataclass
 
@@ -51,7 +52,11 @@ def find_subobjects(function):
         subobject = to_check.pop()
         if iscode(subobject):
             for unbound in subobject.co_names:
-                if iskeyword(unbound) or (unbound in ['bind']) :
+                if (
+                    iskeyword(unbound) # check against keywords
+                    or (unbound in set(dir(builtins))) # check against builtins
+                    or (unbound in ['bind']) # check against called module methodnames
+                ):
                     continue
                 result.add(unbound)
             to_check.extend(subobject.co_consts)

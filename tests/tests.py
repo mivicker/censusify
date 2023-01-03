@@ -1,8 +1,5 @@
 # type: ignore
-from pprint import pprint
-
 from d3census import censusify, Geography, Edition
-from d3census.censusify import find_subobjects
 from d3census.geography import build_call_tree
     # This makes sense for one geography
 
@@ -136,8 +133,6 @@ def test_multi_geo_multi_parent_multi_level():
     def sum_weird_things(*geos):
         return sum(geo.B01001_028E for geo in geos)
     
-    print(Geography.__match_args__)
-
     print(sum_weird_things(
         wayne,
         tract,
@@ -170,10 +165,10 @@ def test_multi_geo_multi_parent_multi_level():
 
 
 if __name__ == "__main__":
-    # test_single_geo_single_val()
-    # test_single_geo_multiple_vals()
-    # test_calltree_same_parent()
-    # test_multi_geo_single_parent()
-    # test_multi_geo_multi_parent_single_level()
-    # test_multi_geo_star_func()
+    test_single_geo_single_val()
+    test_single_geo_multiple_vals()
+    test_calltree_same_parent()
+    test_multi_geo_single_parent()
+    test_multi_geo_multi_parent_single_level()
+    test_multi_geo_star_func()
     test_multi_geo_multi_parent_multi_level()
