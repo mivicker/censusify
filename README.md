@@ -5,7 +5,7 @@ A functional way to manage calls to the Census API.
 ## Installing from github
 
 ```console
-> pip install git+https://github.com/mikevatd3/censusify
+> pip install git+https://github.com/data-driven-detroit/censusify
 ```
 
 ## Example use
@@ -76,10 +76,23 @@ def some_percentage(*geos: Tuple[Geography]) -> float:
     return [(sub_calc / geo.B01001_001E) for sub_calc, geo in zip(sub_calcs, geos)]
 ```
 
+## When using in a Jupyter notebook
+Censusify makes mutiple calls to the Census API asynchronously, which currently breaks when running within a jupyter notebook. The solution currently is to use nest_asyncio.
 
+```
+pip install nest_asyncio
+```
+
+Then within your notebook before calling any censusified functions add:
+
+```python
+import nest_asyncio
+
+nest_asyncio.apply()
+```
 
 TODO:
 
 - Add a describe function to verify all variable names and geography names.
-- Fuss with the interface so you can get more help defining functions earlier
-- Bring along MOE to have it handled reasonably
+- Fuss with the Geography class so you can get more help defining functions earlier in IDE.
+- Bring along MOE to have it handled reasonably.
