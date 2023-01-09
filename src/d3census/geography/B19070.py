@@ -1,0 +1,16 @@
+class B19070:
+    """
+    AGGREGATE OTHER TYPES OF INCOME IN THE PAST 12 MONTHS (IN 2021 INFLATION-ADJUSTED DOLLARS) FOR HOUSEHOLDS
+    universe: Households
+    """
+
+    @property
+    def _001E(self):
+        """
+        AGGREGATE OTHER TYPES OF INCOME IN THE PAST 12 MONTHS (IN 2021 INFLATION-ADJUSTED DOLLARS) FOR HOUSEHOLDS
+        universe: Estimate
+                    Aggregate other types of income in the past 12 months (in 2021 inflation-adjusted dollars):
+        """
+        raise NotImplementedError()
+    
+    

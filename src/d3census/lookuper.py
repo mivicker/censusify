@@ -6,6 +6,13 @@ from .geography import FullGeography, Geography, build_call_tree
 from .requestmanager import request_manager
 
 
+class EmptyTable:
+    """
+    This is the empty table type that can be instantiated
+    to then fill with value attributes.
+    """
+
+
 def filter_to_geo_attrs(dictionary):
     return {
         key.lower().replace(' ', '_'): value
@@ -18,9 +25,20 @@ def build_full_geography(dictionary):
     result = FullGeography()
 
     for key, value in dictionary.items():
-        result.__setattr__(
-            key.replace(' ', '_'), float(value)
-        )  # The casting should probably be done elsewhere
+        try:
+            table, variable = key.split("_")
+
+            if not hasattr(result, table):
+                result.__setattr__(table, EmptyTable())
+
+            result.__getattribute__(table).__setattr__(
+                "_" + variable, float(value)
+            )  # The casting should probably be done elsewhere
+
+        except ValueError:
+            result.__setattr__(
+                key, value
+            )
 
     return result
 

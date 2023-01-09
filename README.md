@@ -94,5 +94,4 @@ nest_asyncio.apply()
 TODO:
 
 - Add a describe function to verify all variable names and geography names.
-- Fuss with the Geography class so you can get more help defining functions earlier in IDE.
 - Bring along MOE to have it handled reasonably.

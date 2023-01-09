@@ -1,6 +1,6 @@
-from typing import Any, Callable, no_type_check
+from typing import Any, Callable
 import inspect
-from inspect import getclosurevars
+import textwrap
 from dataclasses import dataclass
 import ast
 
@@ -63,7 +63,7 @@ class GeoVisitor(NodeVisitor):
 
 
 def write_variable_shopping_list(function) -> set[str]:
-    tree = ast.parse(inspect.getsource(function))
+    tree = ast.parse(textwrap.dedent(inspect.getsource(function)))
     visitor = GeoVisitor()
     visitor.visit(tree)
 
@@ -79,7 +79,7 @@ def censusify(function):
     def add_geography(*geographies: tuple[Geography, ...]):
         def add_edition(edition: Edition):
 
-            bound = edition.bind(geographies, look_up_vars) #type: ignore
+            bound = edition.bind(geographies, shopping_list) #type: ignore
             return function(*(bound[geo] for geo in geographies)) #type: ignore
 
         return add_edition
