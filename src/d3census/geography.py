@@ -239,7 +239,3 @@ def build_call_tree(geographies: list[Geography]) -> CallTree:
 
     return call_tree
 
-
-
-
-

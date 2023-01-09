@@ -1,8 +1,10 @@
 from typing import Any, Callable, no_type_check
-from keyword import iskeyword
-import builtins
-from inspect import getclosurevars, iscode
+import inspect
+from inspect import getclosurevars
 from dataclasses import dataclass
+import ast
+
+from ast import NodeVisitor, Attribute
 
 from .geography import Geography
 from .edition import Edition
@@ -41,39 +43,38 @@ class CensusAPIFunctionGroup:
     sub_functions: list[CensusAPIFunction]
 
 
-def find_subobjects(function):
-    """
-    This needs to be improved.
-    """
-    to_check = list(function.__code__.co_consts)
-    result = set()
+class GeoVisitor(NodeVisitor):
+    def __init__(self) -> None:
+        self.target_variables = set()
+        super().__init__()
 
-    while to_check:
-        subobject = to_check.pop()
-        if iscode(subobject):
-            for unbound in subobject.co_names:
-                if (
-                    iskeyword(unbound) # check against keywords
-                    or (unbound in set(dir(builtins))) # check against builtins
-                    or (unbound in ['bind']) # check against called module methodnames
-                ):
-                    continue
-                result.add(unbound)
-            to_check.extend(subobject.co_consts)
+    def visit_Attribute(self, node: Attribute) -> None:
+        match node:
+            case Attribute(
+                value=Attribute(attr=attr),
+                attr=sub_attr
+            ):
+                if hasattr(Geography, attr):
+                    self.target_variables.add(attr+sub_attr)
+                return
 
-    return result
+            case _:
+                return
 
 
-@no_type_check
+def write_variable_shopping_list(function) -> set[str]:
+    tree = ast.parse(inspect.getsource(function))
+    visitor = GeoVisitor()
+    visitor.visit(tree)
+
+    return visitor.target_variables
+
+
 def censusify(function):
-    closure_vars = set(getclosurevars(function).unbound)
-    sub_clousure_vars = find_subobjects(function)
+    shopping_list = write_variable_shopping_list(function)
 
-    look_up_vars = closure_vars | sub_clousure_vars
-    # This looks through comprehensions
-
-    if not look_up_vars:
-        raise ValueError("No variables to look up.")
+    if not shopping_list:
+        raise ValueError("No Census variables to look up in censusified function.")
 
     def add_geography(*geographies: tuple[Geography, ...]):
         def add_edition(edition: Edition):
