@@ -61,7 +61,9 @@ def build_full_geos_from(
 
 def raw_look_up(
     geographies: list[Geography],
-) - :
+    closure_vars: list[str],
+    filled_base_url: str,
+) -> list[str]:
     call_tree = build_call_tree(geographies)
     geo_filters = call_tree.resolve()
     get_str = ",".join(closure_vars)
@@ -71,7 +73,7 @@ def raw_look_up(
         for geo_filter in geo_filters
     ]
 
-    responses = asyncio.run(request_manager(calls))
+    return asyncio.run(request_manager(calls))
     # This should build the call tree and return the raw response.
 
 
