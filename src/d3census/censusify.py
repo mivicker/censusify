@@ -76,11 +76,11 @@ class CensusifiedGeographyFunc:
         self.function = censusified_func
         self.geography = geography
 
-    def __call__(self, edition):
+    def __call__(self, edition: Edition):
         bound = look_up(geographies, self.function.shopping_list, edition.filled_base_url) #type: ignore
         return self.function.function(*(bound[geo] for geo in geographies)) #type: ignore
 
-    def return_un_calculated(self):
+    def return_un_calculated(self, edition: Edition):
         return look_up(geographies, self.function.shopping_list, edition.filled_base_url) #type: ignore
 
 
