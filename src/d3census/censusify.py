@@ -8,6 +8,7 @@ from ast import NodeVisitor, Attribute
 
 from .geography import Geography
 from .edition import Edition
+from lookuper import look_up
 
 
 def describe(callable: Callable[[Geography, ...], Any]) -> Callable[[Edition], str]:  # type: ignore
@@ -70,18 +71,31 @@ def write_variable_shopping_list(function) -> set[str]:
     return visitor.target_variables
 
 
+class CensusifiedGeographyFunc:
+    def __init__(self, censusified_func, geography: Geography):
+        self.function = censusified_func
+        self.geography = geography
+
+    def __call__(self, edition):
+        bound = look_up(geographies, self.function.shopping_list, edition.filled_base_url) #type: ignore
+        return self.function.function(*(bound[geo] for geo in geographies)) #type: ignore
+
+    def return_un_calculated(self):
+        return look_up(geographies, self.function.shopping_list, edition.filled_base_url) #type: ignore
+
+
+class CensusifiedFunc:
+    def __init__(self, function):
+        shopping_list = write_variable_shopping_list(function)
+
+        if not shopping_list:
+            raise ValueError("No Census variables to look up in censusified function.")
+        self.shopping_list = shopping_list
+        self.function = function
+
+    def __call__(self, geography: Geography):
+        return CensusifiedGeographyFunc(self, geography)
+
+
 def censusify(function):
-    shopping_list = write_variable_shopping_list(function)
-
-    if not shopping_list:
-        raise ValueError("No Census variables to look up in censusified function.")
-
-    def add_geography(*geographies: tuple[Geography, ...]):
-        def add_edition(edition: Edition):
-
-            bound = edition.bind(geographies, shopping_list) #type: ignore
-            return function(*(bound[geo] for geo in geographies)) #type: ignore
-
-        return add_edition
-
-    return add_geography
+    return CensusifiedFunc(function)
