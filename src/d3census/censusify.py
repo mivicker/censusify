@@ -8,7 +8,7 @@ from ast import NodeVisitor, Attribute
 
 from .geography import Geography
 from .edition import Edition
-from lookuper import look_up
+from .lookuper import look_up
 
 
 def describe(callable: Callable[[Geography, ...], Any]) -> Callable[[Edition], str]:  # type: ignore
