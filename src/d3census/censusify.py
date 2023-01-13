@@ -72,16 +72,16 @@ def write_variable_shopping_list(function) -> set[str]:
 
 
 class CensusifiedGeographyFunc:
-    def __init__(self, censusified_func, geography: Geography):
+    def __init__(self, censusified_func, *geographies: Geography):
         self.function = censusified_func
-        self.geography = geography
+        self.geographies = geographies
+
+    def bind_edition(self, edition: Edition):
+        return look_up(self.geographies, self.function.shopping_list, edition.filled_base_url)
 
     def __call__(self, edition: Edition):
-        bound = look_up(geographies, self.function.shopping_list, edition.filled_base_url) #type: ignore
-        return self.function.function(*(bound[geo] for geo in geographies)) #type: ignore
-
-    def return_un_calculated(self, edition: Edition):
-        return look_up(geographies, self.function.shopping_list, edition.filled_base_url) #type: ignore
+        bound = self.bind_edition(edition)
+        return self.function.function(*(bound[geo] for geo in self.geographies))
 
 
 class CensusifiedFunc:
