@@ -1,4 +1,4 @@
-from typing import AbstractSet
+from typing import AbstractSet, Iterable
 
 import asyncio
 
@@ -60,7 +60,7 @@ def build_full_geos_from(
 
 
 def raw_look_up(
-    geographies: list[Geography],
+    geographies: Iterable[Geography],
     closure_vars: list[str],
     filled_base_url: str,
 ) -> list[str]:
