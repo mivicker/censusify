@@ -8,9 +8,13 @@ from d3census.geography import build_call_tree
 def test_single_geo_single_val():
     mi = Geography(state='26')
     acs2021 = Edition("acs5", "acs1", "2021")
-    mi_total_pop = censusify(lambda state: state.B01001._001E)(mi)(acs2021)
+
+    print("Started API call")
+    total_pop = censusify(lambda state: state.B01001._001E)
+    mi_total_pop = total_pop(mi)(acs2021)
     
     assert mi_total_pop == 10_050_811 # I wonder if these ever change?
+    print("Finished test one")
 
 
 def test_single_geo_multiple_vals():
@@ -32,9 +36,11 @@ def test_single_geo_multiple_vals():
             ]
         )
     
+    print("Started API call")
     zero_to_seventeen = under_eighteen(mi)(acs2019)
     
     assert  zero_to_seventeen == 2_177_878
+    print("Finished test two")
 
 
 def test_multi_geo_single_parent():
@@ -46,9 +52,11 @@ def test_multi_geo_single_parent():
     def geo_difference(first: Geography, second: Geography) -> float:
         return first.B01001._001E - second.B01001._001E
 
+    print("Started API call")
     difference = geo_difference(detroit, grand_rapids)(acs2021)
 
     assert  difference == 447_800
+    print("Finished test three")
 
 
 def test_multi_geo_multi_parent_single_level():
@@ -66,12 +74,13 @@ def test_multi_geo_multi_parent_single_level():
             geo_two.B01001._001E,
             geo_three.B01001._001E,
         ]
-
+    print("Started API call")
     assert len(list_of_pops(
         detroit,
         cincinnati,
         atlanta
     )(acs2019)) == 3
+    print("Finished test four")
 
 
 def test_multi_geo_star_func():
@@ -165,7 +174,7 @@ def test_multi_geo_multi_parent_multi_level():
 
 
 if __name__ == "__main__":
-    test_single_geo_single_val()
+    # test_single_geo_single_val_lambda()
     test_single_geo_multiple_vals()
     test_calltree_same_parent()
     test_multi_geo_single_parent()

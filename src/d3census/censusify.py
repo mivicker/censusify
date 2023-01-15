@@ -11,12 +11,13 @@ from .geography import Geography
 from .edition import Edition
 from .lookuper import look_up
 
+import builtins
+
 
 class AbstractCensusifiedFunction:
     @abstractproperty
-    def shopping_list(self) -> list[str]:
+    def shopping_list(self) -> set[str]:
         pass
-
 
 
 class GeoVisitor(NodeVisitor):
@@ -26,6 +27,16 @@ class GeoVisitor(NodeVisitor):
         self.target_variables = set()
         super().__init__()
 
+    """
+    def visit_Call(self, node: Call) -> Any:
+        print(ast.dump(node, indent=4))
+        function_id = node.func.id # type: ignore
+        function = self.variables_in_scope.get(function_id)
+
+        match function:
+            case AbstractCensusifiedFunction():
+                self.target_variables.add(function.shopping_list)
+    """
 
     def visit_Attribute(self, node: Attribute) -> None:
         match node:
@@ -35,18 +46,8 @@ class GeoVisitor(NodeVisitor):
             ):
                 if hasattr(Geography, attr):
                     self.target_variables.add(attr+sub_attr)
-                return
-
             case _:
                 return
-
-    def visit_Call(self, node: Call) -> Any:
-        function_id = node.func.id # type: ignore
-        function = self.variables_in_scope[function_id]
-
-        match function:
-            case AbstractCensusifiedFunction():
-                self.target_variables.add(function.shopping_list)
 
 
 def write_variable_shopping_list(function) -> set[str]:
@@ -84,11 +85,16 @@ class CensusifiedFunc(AbstractCensusifiedFunction):
 
         if not shopping_list:
             raise ValueError("No Census variables to look up in censusified function.")
-        self.shopping_list = shopping_list
+
+        self._shopping_list = shopping_list
         self.function = function
 
-    def __call__(self, geography: Geography):
-        return CensusifiedGeographyFunc(self, geography)
+    @property
+    def shopping_list(self) -> set[str]:
+        return self._shopping_list
+
+    def __call__(self, *geographies: Geography):
+        return CensusifiedGeographyFunc(self, *geographies)
 
 
 def censusify(function):
