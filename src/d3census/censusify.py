@@ -6,10 +6,9 @@ import ast
 
 from ast import NodeVisitor, Attribute
 
-from .geography import Geography
+from .geography import Geography, FullGeography
 from .edition import Edition
 from .lookuper import look_up
-
 
 
 class AbstractCensusifiedFunction:
@@ -18,10 +17,16 @@ class AbstractCensusifiedFunction:
         pass
 
 
-def find_sub_funcs(function) -> list[Callable]:
+def find_sub_funcs(function) -> list[AbstractCensusifiedFunction]:
     accessed_vars = inspect.getclosurevars(function)
+    
+    to_check = {
+        *accessed_vars.nonlocals.values(),
+        *accessed_vars.globals.values()
+    }
+
     return [
-        variable for variable in accessed_vars.globals.values() 
+        variable for variable in to_check
         if isinstance(variable, AbstractCensusifiedFunction)
     ]
 
@@ -62,17 +67,19 @@ def write_variable_shopping_list(function) -> set[str]:
 
 class CensusifiedFunc(AbstractCensusifiedFunction):
     def __init__(self, function):
-        self.sub_funcs = find_sub_funcs(function)
+        sub_funcs = find_sub_funcs(function)
+
         shopping_list = (
                 write_variable_shopping_list(function) 
-                | join_subshoppinglists(self.sub_funcs)
+                | join_subshoppinglists(sub_funcs)
             )
 
         if not shopping_list:
             raise ValueError(
                 "No Census variables to look up in censusified function."
             )
-
+    
+        self.sub_funcs = sub_funcs
         self._shopping_list = shopping_list
         self.function = function
 
@@ -81,16 +88,8 @@ class CensusifiedFunc(AbstractCensusifiedFunction):
         return self._shopping_list
 
     def __call__(self, *geographies: Geography):
-
-        frame = inspect.currentframe()
-        callframe = inspect.getouterframes(frame, 2)
-        # print(globals()[callframe[1].function])
-        # print(isinstance(callframe[1].function, CensusifiedGeographyFunc))
-        
-        """
-        if callframe[1].function == "__call__":
+        if all(isinstance(geo, FullGeography) for geo in geographies):
             return self.function(*geographies)
-        """
 
         return CensusifiedGeographyFunc(self, *geographies)
 

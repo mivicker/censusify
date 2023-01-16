@@ -151,13 +151,9 @@ def test_using_sub_function():
     def under_five(geo: Geography):
         return geo.B01001._003E + geo.B01001._018E
     
-    print("under_five has been defined successfully")
-
     @censusify
     def pct_under_five(geo: Geography):
         return under_five(geo) / geo.B01001._001E
-
-    print("pct under_five has been defined successfully")
 
     tract = Geography(state='26', county='163', tract='511400')
     acs2019 = Edition("acs5", "acs5", "2019")
@@ -186,11 +182,11 @@ def test_using_sub_function():
 
 
 if __name__ == "__main__":
-    # test_single_geo_single_val_lambda()
+    test_single_geo_single_val_lambda()
     test_single_geo_multiple_vals()
-    # test_calltree_same_parent()
-    # test_multi_geo_single_parent()
-    # test_multi_geo_multi_parent_single_level()
-    # test_multi_geo_star_func()
-    # test_multi_geo_multi_parent_multi_level()
+    test_calltree_same_parent()
+    test_multi_geo_single_parent()
+    test_multi_geo_multi_parent_single_level()
+    test_multi_geo_star_func()
+    test_multi_geo_multi_parent_multi_level()
     test_using_sub_function()
