@@ -161,6 +161,17 @@ def test_using_sub_function():
     print(pct_under_five(tract)(acs2019))
 
 
+def test_different_geo_defs():
+    @censusify
+    def under_five(geo: Geography):
+        return geo.B01001._003E + geo.B01001._018E
+
+    place = Geography(state='26', county='163', place='22000')
+    acs2021 = Edition("acs5", "acs5", "2021")
+
+    under_five(place)(acs2021)
+
+
 # Geography 
 
 # Call tree
@@ -190,3 +201,4 @@ if __name__ == "__main__":
     test_multi_geo_star_func()
     test_multi_geo_multi_parent_multi_level()
     test_using_sub_function()
+    test_different_geo_defs()

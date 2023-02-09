@@ -1,4 +1,4 @@
-from typing import AbstractSet, Iterable
+from typing import AbstractSet, Any, Iterable
 
 import asyncio
 
@@ -21,6 +21,13 @@ def filter_to_geo_attrs(dictionary):
     }
 
 
+def safeish_float_cast(value: Any) -> float:
+    try:
+        return float(value)
+    except ValueError:
+        return float("NaN")
+
+
 def build_full_geography(dictionary):
     result = FullGeography()
 
@@ -32,7 +39,7 @@ def build_full_geography(dictionary):
                 result.__setattr__(table, EmptyTable())
 
             result.__getattribute__(table).__setattr__(
-                "_" + variable, float(value)
+                "_" + variable, safeish_float_cast(value)
             )  # The casting should probably be done elsewhere
 
         except ValueError:

@@ -1,5 +1,3 @@
-from abc import abstractproperty
-from typing import Callable
 import inspect
 import textwrap
 import ast
@@ -9,12 +7,7 @@ from ast import NodeVisitor, Attribute
 from .geography import Geography, FullGeography
 from .edition import Edition
 from .lookuper import look_up
-
-
-class AbstractCensusifiedFunction:
-    @abstractproperty
-    def shopping_list(self) -> set[str]:
-        pass
+from .censusified_in_abstract import AbstractCensusifiedFunction
 
 
 def find_sub_funcs(function) -> list[AbstractCensusifiedFunction]:

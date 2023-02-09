@@ -6,22 +6,17 @@ from .tablereference import BaseGeography
 
 
 @dataclass
-class GeoTemplate:
-    """
-    This the template that is used to define functions.
-    This may not even be necessary.
-    """
-    pass
-
-
-@dataclass
-class GeographySet:
+class GeographyWildcard(BaseGeography):
     """
     This is what you'd use anytime you want to pass a wildcard (*) for a
     geographic level.
     """
-    pass
 
+
+@dataclass
+class GeographyLevel:
+    code: str
+    parents: list['GeographyLevel']
 
 
 @dataclass(frozen=True)
@@ -62,27 +57,59 @@ class Geography(BaseGeography):
     # subbarrio: Optional[str] = None
     # subminor_civil_divisions: = None
     block: Optional[str] = None
+    
+    @property
+    def specificity(self) -> str:
+        specificity_order = [
+            "block",
+            "block_group",
+            "tract",
+            "zcta",
+            "subdivision",
+            "county",
+            "place",
+            "state",
+        ]
+
+        for level in specificity_order:
+            if getattr(self, level) != None:
+                return level
+
+        return "us"
+
+    @property
+    def geography_level(self):
+        level_map = {
+            "us": "010",
+            "state": "040",
+            "county": "050",
+            "tract": "140",
+            "congressional_district": "500",
+            "state_senate_district": "610",
+            "state_house_district": "620",
+            "zcta": "860",
+            # "950", # school_district primary
+            # "960", # school_district secondary
+            "school_district": "970", # school_district unified
+        }
+
+    def census_reporter_geoid(self):
+        return f"{self.geography_level}00US{self.identifier}"
 
     @property
     def geoid(self):
         """
         This is kind of a hard function to write.
         """
-        pass
-
+        raise NotImplementedError("This would be nice to have, but Mike gave up before writing it.")
+    
+    identifier = geoid
 
     def __post_init__(self):
-        layers = [
-            [self.state],
-            [self.county, self.place],
-            [self.tract, self.subdivision],
-            [self.block_group],
-            [self.block],
-        ] #There are many breaking cases for this approach, you have to check the tree is valid
-
-        for layer in layers:
-            if sum([geo != None for geo in layer]) > 1:
-                raise ValueError("Invalid combination of geographies. See geography documentation for details.")
+        required_parents = {
+            "block_group": [],
+            "
+        }
 
 
 class FullGeography:
@@ -147,10 +174,8 @@ class CallTree:
 
         return result
 
-
     def resolve_blocks(self) -> list[str]:
         raise ValueError("Block geographies are not supported on ACS.")
-
 
     def resolve(self) -> list[str]:
         return [
@@ -191,7 +216,6 @@ def build_call_tree(geographies: list[Geography]) -> CallTree:
 
             case Geography(
                 state=state,
-                county=None,
                 place=place,
                 tract=None,
                 block=None,
@@ -240,4 +264,10 @@ def build_call_tree(geographies: list[Geography]) -> CallTree:
                 call_tree.blocks[(state, county, tract, block_group)].append(block)
 
     return call_tree
+
+
+@dataclass
+class HipCallTree:
+    pass
+
 
