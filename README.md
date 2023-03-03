@@ -1,5 +1,5 @@
-# d3censusify
-A functional way to manage calls to the Census API.
+# censusify
+An approach to managing calls to the US Census American Community Survey API.
 
 
 ## Installing from github
