@@ -108,7 +108,6 @@ class Geography(BaseGeography):
     def __post_init__(self):
         required_parents = {
             "block_group": [],
-            "
         }
 
 
